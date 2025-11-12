@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config(); // This should be at the VERY TOP
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
@@ -11,18 +14,18 @@ const shopAddressRouter = require("./routes/shop/address-routes");
 const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
-const dotenv = require('dotenv');const commonFeatureRouter = require("./routes/common/feature-routes");
+const commonFeatureRouter = require("./routes/common/feature-routes");
 
-//create a database connection -> u can also
-//create a separate file for this and then import/use that file here
-dotenv.config();
+// Debug: Check if environment variable is loaded
+console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Loaded' : 'Not loaded');
+
 mongoose
-  .connect("mongodb+srv://sagarpoudel677:sagar123@cluster2.sln6o.mongodb.net/")
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.log(error));
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT ;
 
 app.use(
   cors({
