@@ -11,7 +11,6 @@ function ProductImageUpload({
   imageLoadingState,
   uploadedImageUrl,
   setUploadedImageUrl,
-  setImageLoadingState,
   isEditMode = false,
   isCustomStyling = false,
   currentImage = null,
