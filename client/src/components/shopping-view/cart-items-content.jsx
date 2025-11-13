@@ -25,8 +25,6 @@ function UserCartItemsContent({ cartItem }) {
         );
         const getTotalStock = productList[getCurrentProductIndex].totalStock;
 
-        console.log(getCurrentProductIndex, getTotalStock, "getTotalStock");
-
         if (indexOfCurrentCartItem > -1) {
           const getQuantity = getCartItems[indexOfCurrentCartItem].quantity;
           if (getQuantity + 1 > getTotalStock) {
@@ -34,7 +32,6 @@ function UserCartItemsContent({ cartItem }) {
               title: `Only ${getQuantity} quantity can be added for this item`,
               variant: "destructive",
             });
-
             return;
           }
         }
@@ -53,7 +50,7 @@ function UserCartItemsContent({ cartItem }) {
     ).then((data) => {
       if (data?.payload?.success) {
         toast({
-          title: "Cart item is updated successfully",
+          title: "Cart item updated successfully",
         });
       }
     });
@@ -65,57 +62,63 @@ function UserCartItemsContent({ cartItem }) {
     ).then((data) => {
       if (data?.payload?.success) {
         toast({
-          title: "Cart item is deleted successfully",
+          title: "Item removed from cart",
         });
       }
     });
   }
 
+  const itemPrice = cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price;
+  const totalPrice = (itemPrice * cartItem?.quantity).toFixed(2);
+
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center space-x-4 p-4 bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
       <img
         src={cartItem?.image}
         alt={cartItem?.title}
-        className="w-20 h-20 rounded object-cover"
+        className="w-16 h-16 rounded-xl object-cover border border-gray-200"
       />
-      <div className="flex-1">
-        <h3 className="font-extrabold">{cartItem?.title}</h3>
-        <div className="flex items-center gap-2 mt-1">
-          <Button
-            variant="outline"
-            className="h-8 w-8 rounded-full"
-            size="icon"
-            disabled={cartItem?.quantity === 1}
-            onClick={() => handleUpdateQuantity(cartItem, "minus")}
-          >
-            <Minus className="w-4 h-4" />
-            <span className="sr-only">Decrease</span>
-          </Button>
-          <span className="font-semibold">{cartItem?.quantity}</span>
-          <Button
-            variant="outline"
-            className="h-8 w-8 rounded-full"
-            size="icon"
-            onClick={() => handleUpdateQuantity(cartItem, "plus")}
-          >
-            <Plus className="w-4 h-4" />
-            <span className="sr-only">Decrease</span>
-          </Button>
+      <div className="flex-1 space-y-2">
+        <h3 className="font-bold text-gray-900 text-sm leading-tight">
+          {cartItem?.title}
+        </h3>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-2 py-1">
+            <Button
+              variant="ghost"
+              className="h-7 w-7 rounded-lg hover:bg-gray-200 transition-colors"
+              size="icon"
+              disabled={cartItem?.quantity === 1}
+              onClick={() => handleUpdateQuantity(cartItem, "minus")}
+            >
+              <Minus className="w-3 h-3" />
+            </Button>
+            <span className="font-semibold text-gray-900 min-w-6 text-center">
+              {cartItem?.quantity}
+            </span>
+            <Button
+              variant="ghost"
+              className="h-7 w-7 rounded-lg hover:bg-gray-200 transition-colors"
+              size="icon"
+              onClick={() => handleUpdateQuantity(cartItem, "plus")}
+            >
+              <Plus className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="flex flex-col items-end">
-        <p className="font-semibold">
-          $
-          {(
-            (cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price) *
-            cartItem?.quantity
-          ).toFixed(2)}
+      <div className="flex flex-col items-end space-y-2">
+        <p className="font-bold text-orange-600 text-lg">
+          ${totalPrice}
         </p>
-        <Trash
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => handleCartItemDelete(cartItem)}
-          className="cursor-pointer mt-1"
-          size={20}
-        />
+          className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors"
+        >
+          <Trash className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
