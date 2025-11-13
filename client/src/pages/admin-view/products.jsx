@@ -20,7 +20,7 @@ import {
   fetchAllProducts,
 } from "@/store/admin/products-slice";
 import axios from "axios";
-import { Plus, Package, Search, Filter, Grid, List } from "lucide-react";
+import { Plus, Package, Search, Grid, List } from "lucide-react";
 
 const INITIAL_FORM_DATA = {
   image: null,
@@ -136,8 +136,6 @@ function AdminProducts() {
         totalStock: parseInt(formData.totalStock) || 0,
         averageReview: parseFloat(formData.averageReview) || 0,
       };
-
-      console.log("Submitting product data:", productData);
 
       let result;
 
