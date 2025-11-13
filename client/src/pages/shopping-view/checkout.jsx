@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { createNewOrder, clearPaymentData } from "@/store/shop/order-slice";
 import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Shield, CreditCard, Package, MapPin } from "lucide-react";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -33,12 +35,10 @@ function ShoppingCheckout() {
   const submitEsewaForm = (paymentData) => {
     console.log("Submitting eSewa form with data:", paymentData);
     
-    // Create a form element
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = paymentData.paymentUrl || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
     
-    // Add all payment data as hidden inputs
     Object.keys(paymentData).forEach(key => {
       if (paymentData[key] !== undefined && paymentData[key] !== null) {
         const input = document.createElement('input');
@@ -49,7 +49,6 @@ function ShoppingCheckout() {
       }
     });
     
-    // Add the form to the body and submit it
     document.body.appendChild(form);
     console.log("Submitting form to:", form.action);
     form.submit();
@@ -116,14 +115,12 @@ function ShoppingCheckout() {
     console.log("Creating order with data:", orderData);
     setIsPaymentStart(true);
     
-    // Clear any previous payment data
     dispatch(clearPaymentData());
     
     dispatch(createNewOrder(orderData)).then((data) => {
       console.log("Order creation response:", data);
       if (data?.payload?.success) {
         console.log("Order created successfully, waiting for auto-redirect...");
-        // The useEffect will handle the redirect automatically
       } else {
         setIsPaymentStart(false);
         toast({
@@ -144,47 +141,150 @@ function ShoppingCheckout() {
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="relative h-[300px] w-full overflow-hidden">
-        <img src={img} className="h-full w-full object-cover object-center" alt="Checkout Banner" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5 p-5">
-        <Address
-          selectedId={currentSelectedAddress}
-          setCurrentSelectedAddress={setCurrentSelectedAddress}
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero Header */}
+      <div className="relative h-64 w-full overflow-hidden">
+        <img 
+          src={img} 
+          className="h-full w-full object-cover object-center" 
+          alt="Checkout Banner" 
         />
-        <div className="flex flex-col gap-4">
-          {cartItems && cartItems.items && cartItems.items.length > 0
-            ? cartItems.items.map((item) => (
-                <UserCartItemsContent key={item.productId} cartItem={item} />
-              ))
-            : (
-              <div className="text-center text-muted-foreground py-8">
-                Your cart is empty
-              </div>
-            )}
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/90 to-orange-600/80"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white">
+            <h1 className="text-4xl font-black mb-4">Checkout</h1>
+            <p className="text-xl opacity-90">Complete your purchase securely</p>
+          </div>
+        </div>
+      </div>
 
-          {cartItems && cartItems.items && cartItems.items.length > 0 && (
-            <>
-              <div className="mt-8 space-y-4">
-                <div className="flex justify-between">
-                  <span className="font-bold">Total</span>
-                  <span className="font-bold">${totalCartAmount.toFixed(2)}</span>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8 -mt-8 relative z-10">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Left Column - Address & Items */}
+          <div className="xl:col-span-2 space-y-6">
+            {/* Address Section */}
+            <Card className="rounded-2xl shadow-lg border-0 bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 w-10 h-10 rounded-xl flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Delivery Address</h2>
+                    <p className="text-gray-600">Select your delivery address</p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-4 w-full">
-                <Button 
-                  onClick={handleInitiatePayment} 
-                  className="w-full"
-                  disabled={isPaymentStart || isLoading}
-                >
-                  {isPaymentStart || isLoading
-                    ? "Processing eSewa Payment..."
-                    : "Checkout with eSewa"}
-                </Button>
-              </div>
-            </>
-          )}
+                <Address
+                  selectedId={currentSelectedAddress}
+                  setCurrentSelectedAddress={setCurrentSelectedAddress}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Order Items Section */}
+            <Card className="rounded-2xl shadow-lg border-0 bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 w-10 h-10 rounded-xl flex items-center justify-center">
+                    <Package className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Order Summary</h2>
+                    <p className="text-gray-600">Review your items</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {cartItems && cartItems.items && cartItems.items.length > 0
+                    ? cartItems.items.map((item) => (
+                        <UserCartItemsContent key={item.productId} cartItem={item} />
+                      ))
+                    : (
+                      <div className="text-center text-gray-500 py-8">
+                        <Package className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                        <p>Your cart is empty</p>
+                      </div>
+                    )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Order Summary */}
+          <div className="xl:col-span-1">
+            <Card className="rounded-2xl shadow-lg border-0 bg-white sticky top-8">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 w-10 h-10 rounded-xl flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Payment Summary</h2>
+                    <p className="text-gray-600">Complete your payment</p>
+                  </div>
+                </div>
+
+                {cartItems && cartItems.items && cartItems.items.length > 0 && (
+                  <div className="space-y-6">
+                    {/* Order Breakdown */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Subtotal</span>
+                        <span className="text-gray-900">${totalCartAmount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Shipping</span>
+                        <span className="text-green-600">Free</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Tax</span>
+                        <span className="text-gray-900">$0.00</span>
+                      </div>
+                      <div className="border-t border-gray-200 pt-3">
+                        <div className="flex justify-between text-lg font-bold">
+                          <span>Total</span>
+                          <span className="text-orange-600">${totalCartAmount.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Security Badge */}
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 bg-gray-50 rounded-xl p-3">
+                      <Shield className="h-4 w-4 text-green-500" />
+                      <span>Secure payment with eSewa</span>
+                    </div>
+
+                    {/* Checkout Button */}
+                    <Button 
+                      onClick={handleInitiatePayment} 
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                      disabled={isPaymentStart || isLoading}
+                      size="lg"
+                    >
+                      {isPaymentStart || isLoading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Processing Payment...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <CreditCard className="h-5 w-5" />
+                          <span>Pay with eSewa</span>
+                        </div>
+                      )}
+                    </Button>
+
+                    {/* Requirements */}
+                    <div className="text-xs text-gray-500 text-center space-y-1">
+                      <p>• Please select a delivery address</p>
+                      <p>• You will be redirected to eSewa for payment</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
