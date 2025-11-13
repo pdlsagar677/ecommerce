@@ -5,11 +5,12 @@ import AdminProductTile from "@/components/admin-view/product-tile";
 import CommonForm from "@/components/common/form";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { addProductFormElements } from "@/config";
 import {
@@ -19,6 +20,7 @@ import {
   fetchAllProducts,
 } from "@/store/admin/products-slice";
 import axios from "axios";
+import { Plus, Package, Search, Filter, Grid, List } from "lucide-react";
 
 const INITIAL_FORM_DATA = {
   image: null,
@@ -39,6 +41,9 @@ function AdminProducts() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const { productList } = useSelector((state) => state.adminProducts);
   const dispatch = useDispatch();
@@ -153,6 +158,7 @@ function AdminProducts() {
         
         toast({
           title: currentEditedId !== null ? "Product updated successfully" : "Product added successfully",
+          className: "bg-green-50 border-green-200 text-green-800",
         });
 
         // Reset form and close dialog
@@ -179,6 +185,7 @@ function AdminProducts() {
         dispatch(fetchAllProducts());
         toast({
           title: "Product deleted successfully",
+          className: "bg-green-50 border-green-200 text-green-800",
         });
       }
     } catch (error) {
@@ -222,67 +229,268 @@ function AdminProducts() {
     dispatch(fetchAllProducts());
   }, [dispatch]);
 
+  // Filter and search products
+  const filteredProducts = useMemo(() => {
+    if (!productList) return [];
+    
+    return productList.filter(product => {
+      const matchesSearch = product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [productList, searchTerm, selectedCategory]);
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    if (!productList) return [];
+    const uniqueCategories = [...new Set(productList.map(product => product.category).filter(Boolean))];
+    return ["all", ...uniqueCategories];
+  }, [productList]);
+
   const productTiles = useMemo(() => {
-    if (!productList || productList.length === 0) {
+    if (!filteredProducts || filteredProducts.length === 0) {
       return (
-        <div className="col-span-full text-center py-8 text-muted-foreground">
-          No products found. Add your first product to get started.
+        <div className="col-span-full text-center py-16">
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="bg-gradient-to-r from-orange-100 to-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+              <Package className="h-10 w-10 text-orange-600" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-gray-900">No products found</h3>
+              <p className="text-gray-500">
+                {searchTerm || selectedCategory !== "all" 
+                  ? "Try adjusting your search or filter criteria" 
+                  : "Add your first product to get started"}
+              </p>
+            </div>
+            {!searchTerm && selectedCategory === "all" && (
+              <Button 
+                onClick={() => setOpenCreateProductsDialog(true)}
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Product
+              </Button>
+            )}
+          </div>
         </div>
       );
     }
 
-    return productList.map((productItem) => (
+    return filteredProducts.map((productItem) => (
       <AdminProductTile
         key={productItem._id}
         product={productItem}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        viewMode={viewMode}
       />
     ));
-  }, [productList, handleEdit, handleDelete]);
+  }, [filteredProducts, handleEdit, handleDelete, viewMode, searchTerm, selectedCategory]);
 
   return (
     <Fragment>
-      <div className="mb-5 w-full flex justify-end">
-        <Button onClick={() => setOpenCreateProductsDialog(true)}>
-          Add New Product
-        </Button>
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              Product Management
+            </h1>
+            <p className="text-gray-600">
+              Manage your products, inventory, and pricing
+            </p>
+          </div>
+          
+          <Button 
+            onClick={() => setOpenCreateProductsDialog(true)}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200"
+            size="lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add New Product
+          </Button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Products</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{productList?.length || 0}</p>
+              </div>
+              <div className="bg-orange-100 p-3 rounded-xl">
+                <Package className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Products</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  {productList?.filter(p => p.totalStock > 0).length || 0}
+                </p>
+              </div>
+              <div className="bg-green-100 p-3 rounded-xl">
+                <Package className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Out of Stock</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  {productList?.filter(p => p.totalStock === 0).length || 0}
+                </p>
+              </div>
+              <div className="bg-red-100 p-3 rounded-xl">
+                <Package className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-1 gap-4 w-full lg:w-auto">
+              {/* Search Input */}
+              <div className="relative flex-1 lg:flex-initial lg:w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
+                />
+              </div>
+
+              {/* Category Filter */}
+              <div className="flex-1 lg:flex-initial">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white"
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>
+                      {category === "all" ? "All Categories" : category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* View Toggle */}
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className={`${
+                  viewMode === "grid" 
+                    ? "bg-white shadow-sm text-orange-600" 
+                    : "text-gray-600 hover:text-orange-600"
+                } transition-colors`}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className={`${
+                  viewMode === "list" 
+                    ? "bg-white shadow-sm text-orange-600" 
+                    : "text-gray-600 hover:text-orange-600"
+                } transition-colors`}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+
+      {/* Products Grid/List */}
+      <div className={`${
+        viewMode === "grid" 
+          ? "grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+          : "space-y-4"
+      }`}>
         {productTiles}
       </div>
-      <Sheet
+
+      {/* Product Dialog */}
+      <Dialog
         open={openCreateProductsDialog}
         onOpenChange={handleCloseDialog}
       >
-        <SheetContent side="right" className="overflow-auto">
-          <SheetHeader>
-            <SheetTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
               {currentEditedId !== null ? "Edit Product" : "Add New Product"}
-            </SheetTitle>
-          </SheetHeader>
-          <ProductImageUpload
-            imageFile={imageFile}
-            setImageFile={setImageFile}
-            uploadedImageUrl={uploadedImageUrl}
-            setUploadedImageUrl={setUploadedImageUrl}
-            setImageLoadingState={setImageLoadingState}
-            imageLoadingState={imageLoadingState}
-            isEditMode={currentEditedId !== null}
-            currentImage={currentEditedId !== null ? formData.image : null}
-          />
-          <div className="py-6">
-            <CommonForm
-              onSubmit={onSubmit}
-              formData={formData}
-              setFormData={setFormData}
-              buttonText={currentEditedId !== null ? "Update" : imageLoadingState ? "Uploading..." : "Add"}
-              formControls={addProductFormElements}
-              isBtnDisabled={!isFormValid() || imageLoadingState}
-            />
+            </DialogTitle>
+            <DialogDescription>
+              {currentEditedId !== null 
+                ? "Update your product information below" 
+                : "Fill in the details to add a new product to your store"
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* Image Upload Section */}
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
+                <h3 className="font-semibold text-orange-800 mb-4 flex items-center">
+                  <Package className="h-5 w-5 mr-2" />
+                  Product Image
+                </h3>
+                <ProductImageUpload
+                  imageFile={imageFile}
+                  setImageFile={setImageFile}
+                  uploadedImageUrl={uploadedImageUrl}
+                  setUploadedImageUrl={setUploadedImageUrl}
+                  setImageLoadingState={setImageLoadingState}
+                  imageLoadingState={imageLoadingState}
+                  isEditMode={currentEditedId !== null}
+                  currentImage={currentEditedId !== null ? formData.image : null}
+                />
+              </div>
+            </div>
+
+            {/* Form Section */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                <CommonForm
+                  onSubmit={onSubmit}
+                  formData={formData}
+                  setFormData={setFormData}
+                  buttonText={
+                    currentEditedId !== null 
+                      ? "Update Product" 
+                      : imageLoadingState 
+                        ? "Uploading..." 
+                        : "Add Product"
+                  }
+                  formControls={addProductFormElements}
+                  isBtnDisabled={!isFormValid() || imageLoadingState}
+                  buttonClassName="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                />
+              </div>
+            </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </Fragment>
   );
 }

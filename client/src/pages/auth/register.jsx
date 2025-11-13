@@ -1,6 +1,4 @@
-import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
-import { registerFormControls } from "@/config";
 import { registerUser } from "@/store/auth-slice";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -45,7 +43,8 @@ function AuthRegister() {
           description: data?.payload?.message,
           className: "bg-green-50 border-green-200 text-green-800",
         });
-        navigate("/auth/login");
+        // Navigate directly to shop home after successful registration
+        navigate("/shop/home");
       } else {
         toast({
           title: "Registration Failed",
@@ -127,7 +126,6 @@ function AuthRegister() {
             Create your account and start shopping
           </p>
         </div>
-      
       </div>
 
       {/* Registration Form */}
@@ -278,7 +276,8 @@ function AuthRegister() {
             )}
           </button>
         </form>
-          <p className="text-sm text-gray-500">
+
+        <p className="text-sm text-gray-500">
           Already have an account?{" "}
           <Link
             className="font-semibold text-orange-600 hover:text-orange-700 hover:underline transition-colors"
@@ -287,6 +286,7 @@ function AuthRegister() {
             Sign in here
           </Link>
         </p>
+
         {/* Divider */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
