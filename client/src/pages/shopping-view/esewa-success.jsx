@@ -185,7 +185,7 @@ function EsewaSuccessPage() {
           </div>
           <div className="space-y-3">
             <Button 
-              onClick={() => navigate("/account/orders")}
+              onClick={() => navigate("/shop/account")}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-all duration-300"
               size="lg"
             >
