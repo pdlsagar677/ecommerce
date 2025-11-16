@@ -7,12 +7,13 @@ const initialState = {
   user: null,
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
+
 export const registerUser = createAsyncThunk(
   "/auth/register",
-
   async (formData) => {
     const response = await axios.post(
-      "http://localhost:5000/api/auth/register",
+      `${API_BASE_URL}/api/auth/register`,
       formData,
       {
         withCredentials: true,
@@ -25,10 +26,9 @@ export const registerUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
   "/auth/login",
-
   async (formData) => {
     const response = await axios.post(
-      "http://localhost:5000/api/auth/login",
+      `${API_BASE_URL}/api/auth/login`,
       formData,
       {
         withCredentials: true,
@@ -41,10 +41,9 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   "/auth/logout",
-
   async () => {
     const response = await axios.post(
-      "http://localhost:5000/api/auth/logout",
+      `${API_BASE_URL}/api/auth/logout`,
       {},
       {
         withCredentials: true,
@@ -57,10 +56,9 @@ export const logoutUser = createAsyncThunk(
 
 export const checkAuth = createAsyncThunk(
   "/auth/checkauth",
-
   async () => {
     const response = await axios.get(
-      "http://localhost:5000/api/auth/check-auth",
+      `${API_BASE_URL}/api/auth/check-auth`,
       {
         withCredentials: true,
         headers: {
@@ -78,7 +76,11 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action) => {},
+    setUser: (state, action) => {
+      // You might want to implement this reducer to manually set user data
+      // state.user = action.payload;
+      // state.isAuthenticated = true;
+    },
   },
   extraReducers: (builder) => {
     builder

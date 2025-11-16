@@ -48,6 +48,7 @@ function AdminProducts() {
   const { productList } = useSelector((state) => state.adminProducts);
   const dispatch = useDispatch();
   const { toast } = useToast();
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
 
   // Form validation
   const isFormValid = useCallback(() => {
@@ -71,7 +72,7 @@ function AdminProducts() {
       imageFormData.append("my_file", imageFile);
       
       const uploadResponse = await axios.post(
-        "http://localhost:5000/api/admin/products/upload-image",
+        `${API_BASE_URL}/api/admin/products/upload-image`,
         imageFormData,
         {
           headers: {

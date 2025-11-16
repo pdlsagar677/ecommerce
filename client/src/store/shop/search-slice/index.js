@@ -6,11 +6,14 @@ const initialState = {
   searchResults: [],
 };
 
+// Get base API URL from environment variables for Vite
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 export const getSearchResults = createAsyncThunk(
   "/order/getSearchResults",
   async (keyword) => {
     const response = await axios.get(
-      `http://localhost:5000/api/shop/search/${keyword}`
+      `${API_BASE_URL}/api/shop/search/${keyword}`
     );
 
     return response.data;

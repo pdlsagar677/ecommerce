@@ -4,13 +4,16 @@ import axios from "axios";
 const initialState = {
   orderList: [],
   orderDetails: null,
+  isLoading: false, // Added missing isLoading state
 };
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
 
 export const getAllOrdersForAdmin = createAsyncThunk(
   "/order/getAllOrdersForAdmin",
   async () => {
     const response = await axios.get(
-      `http://localhost:5000/api/admin/orders/get`
+      `${API_BASE_URL}/api/admin/orders/get`
     );
 
     return response.data;
@@ -21,7 +24,7 @@ export const getOrderDetailsForAdmin = createAsyncThunk(
   "/order/getOrderDetailsForAdmin",
   async (id) => {
     const response = await axios.get(
-      `http://localhost:5000/api/admin/orders/details/${id}`
+      `${API_BASE_URL}/api/admin/orders/details/${id}`
     );
 
     return response.data;
@@ -32,7 +35,7 @@ export const updateOrderStatus = createAsyncThunk(
   "/order/updateOrderStatus",
   async ({ id, orderStatus }) => {
     const response = await axios.put(
-      `http://localhost:5000/api/admin/orders/update/${id}`,
+      `${API_BASE_URL}/api/admin/orders/update/${id}`,
       {
         orderStatus,
       }
@@ -48,7 +51,6 @@ const adminOrderSlice = createSlice({
   reducers: {
     resetOrderDetails: (state) => {
       console.log("resetOrderDetails");
-
       state.orderDetails = null;
     },
   },
@@ -75,6 +77,27 @@ const adminOrderSlice = createSlice({
       .addCase(getOrderDetailsForAdmin.rejected, (state) => {
         state.isLoading = false;
         state.orderDetails = null;
+      })
+      .addCase(updateOrderStatus.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Update the order in the orderList if it exists
+        if (action.payload.data) {
+          const updatedOrder = action.payload.data;
+          const index = state.orderList.findIndex(order => order._id === updatedOrder._id);
+          if (index !== -1) {
+            state.orderList[index] = updatedOrder;
+          }
+          // Also update orderDetails if it's the current order being viewed
+          if (state.orderDetails && state.orderDetails._id === updatedOrder._id) {
+            state.orderDetails = updatedOrder;
+          }
+        }
+      })
+      .addCase(updateOrderStatus.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

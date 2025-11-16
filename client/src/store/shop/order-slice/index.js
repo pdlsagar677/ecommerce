@@ -10,11 +10,14 @@ const initialState = {
   orderDetails: null,
 };
 
+// Get base API URL from environment variables for Vite
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
   async (orderData) => {
     const response = await axios.post(
-      "http://localhost:5000/api/shop/order/create",
+      `${API_BASE_URL}/api/shop/order/create`,
       orderData
     );
     return response.data;
@@ -28,7 +31,7 @@ export const capturePayment = createAsyncThunk(
       console.log("🔄 Capturing payment with data:", { orderId, transactionId, paymentMethod });
       
       const response = await axios.post(
-        "http://localhost:5000/api/shop/order/capture",
+        `${API_BASE_URL}/api/shop/order/capture`,
         {
           orderId,
           transactionId,
@@ -49,7 +52,7 @@ export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
   async (userId) => {
     const response = await axios.get(
-      `http://localhost:5000/api/shop/order/list/${userId}`
+      `${API_BASE_URL}/api/shop/order/list/${userId}`
     );
     return response.data;
   }
@@ -59,7 +62,7 @@ export const getOrderDetails = createAsyncThunk(
   "/order/getOrderDetails",
   async (id) => {
     const response = await axios.get(
-      `http://localhost:5000/api/shop/order/details/${id}`
+      `${API_BASE_URL}/api/shop/order/details/${id}`
     );
     return response.data;
   }
