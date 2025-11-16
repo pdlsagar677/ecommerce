@@ -29,21 +29,18 @@ const adminSidebarMenuItems = [
     label: "Products",
     path: "/admin/products",
     icon: <ShoppingBasket className="h-5 w-5" />,
-    count: 24
   },
   {
     id: "orders",
     label: "Orders",
     path: "/admin/orders",
-    icon: <BadgeCheck className="h-5 w-5" />,
-    count: 12
+    icon: <BadgeCheck className="h-5 w-5" />
   },
   {
     id: "customers",
     label: "Customers",
-    path: "/admin/customers",
+    path: "#",
     icon: <Users className="h-5 w-5" />,
-    count: 156
   },
 ];
 
@@ -145,13 +142,7 @@ function AdminSideBar({ open, setOpen }) {
                 <Settings className="h-4 w-4 mr-3" />
                 Settings
               </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:border-red-500 border-2 transition-all duration-200"
-              >
-                <LogOut className="h-4 w-4 mr-3" />
-                Logout
-              </Button>
+            
             </div>
           </div>
         </SheetContent>
